@@ -27,11 +27,9 @@ def checkGPTresponse(question):
         temperature=0.7
     )
 
-    # Retrieve and return the generated answer
     answer = response.choices[0].text.strip().split(":")[1].strip()
     return answer
 
-# Send a question to ChatGPT and print the answer
 question = "What is the capital of France?"
 answer = checkGPTresponse(question)
 print("Answer:", answer)
