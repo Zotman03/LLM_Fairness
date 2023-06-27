@@ -1,7 +1,9 @@
 from datasets import load_dataset
 import openai
-import requests
-#build GPT response API
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 dataset = load_dataset('coastalcph/fairlex', 'scotus', split='test')
 itera = 1
@@ -12,13 +14,12 @@ for example in dataset:
     text = example['text']
     itera += 1
 
-# #make env file
-
-# openai.api_key = 'YOUR_API_KEY'
+api_key = os.getenv('NEXT_PUBLIC_OPENAI_API_KEY')
+openai.api_key = api_key
 
 completion = openai.ChatCompletion.create(
   model="gpt-3.5-turbo", 
-  messages = [{"role": "system", "content" : "read the script and predict the relevant issue area in these categories: a classification label (the relevant issue area). The issue areas are: (1, Criminal Procedure), (2, Civil Rights), (3, First Amendment), (4, Due Process), (5, Privacy), (6, Attorneys), (7, Unions), (8, Economic Activity), (9, Judicial Power), (10, Federalism), (11, Interstate Relations), (12, Federal Taxation), (13, Miscellaneous), (14, Private Action)."},
+  messages = [{"role": "system", "content" : "read the script and predict the relevant issue area in these categories: a classification label (the relevant issue area). The issue areas are: (0, Criminal Procedure), (1, Civil Rights), (2, First Amendment), (3, Due Process), (4, Privacy), (5, Attorneys), (6, Unions), (7, Economic Activity), (8, Judicial Power), (9, Federalism), (10, Interstate Relations), (11, Federal Taxation), (12, Miscellaneous), (13, Private Action)."},
 {"role": "user", "content" : "what kind of crime is robbery"},
 {"role": "assistant", "content" : "it is a felony"},
 {"role": "user", "content" : "what would the predicted label for this" + text[:3000] + "will be?"}]
