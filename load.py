@@ -22,9 +22,9 @@ openai.api_key = api_key
 completion = openai.ChatCompletion.create(
   model="gpt-3.5-turbo", 
   messages = [{"role": "system", "content" : "read the script and predict the relevant issue area in these categories: a classification label (the relevant issue area). The issue areas are: (0, Criminal Procedure), (1, Civil Rights), (2, First Amendment), (3, Due Process), (4, Privacy), (5, Attorneys), (6, Unions), (7, Economic Activity), (8, Judicial Power), (9, Federalism), (10, Interstate Relations), (11, Federal Taxation), (12, Miscellaneous), (13, Private Action)."},
-{"role": "user", "content" : text[:3000]},
+{"role": "user", "content" : "what would the predicted label for this" + text[:4000] + "will be?"},
 {"role": "assistant", "content" : "(2, First Amendment)"},
-{"role": "user", "content" : "what would the predicted label for this" + input_text[:3000] + "will be?"}]
+{"role": "user", "content" : "what would the predicted label for this" + input_text[:4000] + "will be?"}]
 )
 
 print(completion['choices'][0]['message']['content'])
