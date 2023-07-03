@@ -18,6 +18,7 @@ input_ans = dataset[0]['label']
 # Numbers
 total = 0
 total_right = 0
+buffer = 0
 
 # Loop now
 for example in dataset:
@@ -45,7 +46,11 @@ for example in dataset:
               if extracted_number == str(input_ans):
                  total_right += 1
     total += 1
-    time.sleep(6)
     print(total, " out of 100 complete")
+    buffer += 1
+    if(buffer == 10):
+      time.sleep(10)
+      buffer = 0
+    
 
 print(total_right / total)
