@@ -55,6 +55,7 @@ for example in dataset:
         time.sleep(10)
         buffer = 0   
 
+print("Using GPT3.5 turbo")
 print(total_right)
 print(total)
-print(total_right / total)
+print(total_right / total * 100)
