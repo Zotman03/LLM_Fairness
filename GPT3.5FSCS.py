@@ -1,3 +1,4 @@
+#This is for FSCS dataset on GPT3.5-Turbo
 from datasets import load_dataset
 import openai
 import os
@@ -10,7 +11,7 @@ from sklearn.metrics import f1_score
 load_dotenv()
 api_key = os.getenv('NEXT_PUBLIC_OPENAI_API_KEY')
 openai.api_key = api_key
-dataset = load_dataset('coastalcph/fairlex', 'scotus', split='test')
+dataset = load_dataset('coastalcph/fairlex', 'fscs', split='test')
 
 # Example data
 text = dataset[0]['text']
@@ -28,20 +29,19 @@ for example in dataset:
        is_first = False
        continue
     else:
-      if(total == 100):
+      if(total == 1):
         break
       
       input_text = example['text']
-      input_ans = example['label']
+      input_ans = example['legal_area']
       completion = openai.ChatCompletion.create(
         temperature=0,
         model="gpt-3.5-turbo", 
-        messages = [{"role": "system", "content" : "read the script and predict the relevant issue area in these categories (0, Criminal Procedure), (1, Civil Rights), (2, First Amendment), (3, Due Process), (4, Privacy), (5, Attorneys), (6, Unions), (7, Economic Activity), (8, Judicial Power), (9, Federalism), (10, Interstate Relations), (11, Federal Taxation), (12, Miscellaneous), (13, Private Action)."},
+        messages = [{"role": "system", "content" : "read the script and predict the relevant issue area in these categories (0, public), (1, penal law), (2, social law), (3, civil law), (4, insurance law)."},
         {"role": "user", "content" : "what would the predicted label for this" + text[:4000] + "will be? Respond with just the label number"},
         {"role": "assistant", "content" : "2"},
         {"role": "user", "content" : "what would the predicted label for this" + input_text[:4000] + "will be? Respond with just the label number"}]
       )
-
       if(completion['choices'][0]['message']['content'] == str(input_ans)): # Check if the predicted label is equal to actual label.
           total_right += 1
       else:
