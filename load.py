@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import time
 import re
+from sklearn.metrics import f1_score
 
 # Dataset loading and API
 load_dotenv()
@@ -13,6 +14,8 @@ dataset = load_dataset('coastalcph/fairlex', 'scotus', split='test')
 
 # Example data
 text = dataset[0]['text']
+true_labels = []
+response_labels = []
 
 # Numbers
 total = 0
@@ -45,9 +48,11 @@ for example in dataset:
         if(len(completion['choices'][0]['message']['content']) > 1):
             match = re.search(r'\d+', completion['choices'][0]['message']['content'])
             if match:
-                extracted_number = str(match.group())
-                if extracted_number == str(input_ans):
+                completion['choices'][0]['message']['content'] = str(match.group())
+                if completion['choices'][0]['message']['content'] == str(input_ans):
                   total_right += 1
+      true_labels.append(str(input_ans))
+      response_labels.append(completion['choices'][0]['message']['content'])
       total += 1
       print(total, " out of 100 complete")
       buffer += 1
@@ -59,3 +64,11 @@ print("Using GPT3.5 turbo")
 print(total_right)
 print(total)
 print(total_right / total * 100)
+print("Real answer from dataset: ", true_labels)
+print("GPT's response: ", response_labels)
+f1_scores = f1_score(true_labels, response_labels, average=None)
+
+mF1_score = sum(f1_scores) / len(f1_scores)
+
+print("F1 Scores:", f1_scores)
+print("mF1 Score:", mF1_score)
