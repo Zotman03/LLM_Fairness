@@ -29,7 +29,7 @@ for example in dataset:
        is_first = False
        continue
     else:
-      if(total == 1):
+      if(total == 100):
         break
       
       input_text = example['text']
