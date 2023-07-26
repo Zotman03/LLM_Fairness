@@ -78,11 +78,12 @@ for example in dataset:
         response_labels_lib.append(completion['choices'][0]['message']['content'])
         liberal_Total += 1
       total += 1
-      print(total, " out of 100 complete")
+      print(total, " out of 1000 complete")
       buffer += 1
-      if(buffer == 10):
+      if(buffer % 10 == 0):
         time.sleep(10)
-        buffer = 0   
+      if(buffer % 200 == 0):
+         time.sleep(120)
 
 print("Using GPT3.5 turbo")
 print(total_right)
