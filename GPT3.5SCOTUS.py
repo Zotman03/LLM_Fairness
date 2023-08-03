@@ -34,7 +34,7 @@ is_first = True
 for example in dataset:
     if(is_first is True):
        is_first = False
-       continue
+       continue # Check for the first time, and will never be checked again
     else:
       if(total == 1000):
         break
@@ -42,6 +42,9 @@ for example in dataset:
       input_text = example['text']
       input_ans = example['label']
       input_direction = example['decision_direction']
+      #Get the criteria such as decision_direction.
+      #TODO: add other criteria.
+
       completion = openai.ChatCompletion.create(
         temperature=0,
         model="gpt-3.5-turbo", 
@@ -52,31 +55,37 @@ for example in dataset:
       )
 
       if(completion['choices'][0]['message']['content'] == str(input_ans)): # Check if the predicted label is equal to actual label.
+          #TODO: Change this to be more efficient. Perhaps a dictionary
           if(input_direction == 0):
              con_Correct += 1
           elif(input_direction == 1):
              liberal_Correct += 1
           total_right += 1
-      else:
+      else: #A safe layer to check if the result is correct but format issue causing it to receive wrong answer
         if(len(completion['choices'][0]['message']['content']) > 1):
-            match = re.search(r'\d+', completion['choices'][0]['message']['content'])
+            match = re.search(r'\d+', completion['choices'][0]['message']['content']) #Regular expression to make sure there is only one item here.
             if match:
                 completion['choices'][0]['message']['content'] = str(match.group())
-                if completion['choices'][0]['message']['content'] == str(input_ans):
-                  total_right += 1
-                  if(input_direction == 0):
+                if completion['choices'][0]['message']['content'] == str(input_ans): #check if it is the correct label
+                  total_right += 1 #Total correct append
+                  #TODO: probably make this more efficient
+                  if(input_direction == 0): #Check for direction, conservative
                     con_Correct += 1
                   elif(input_direction == 1):
                     liberal_Correct += 1
 
+      #If the result is wrong then it goes here.
       if(input_direction == 0):
         true_labels_con.append(str(input_ans))
         response_labels_con.append(completion['choices'][0]['message']['content'])
         con_Total += 1
+        #Append the conservative true label, response label and total conservative number. Same as below
       elif(input_direction == 1):
         true_labels_lib.append(str(input_ans))
         response_labels_lib.append(completion['choices'][0]['message']['content'])
         liberal_Total += 1
+      
+      #Add 1 to the total number
       total += 1
       print(total, " out of 1000 complete")
       buffer += 1
