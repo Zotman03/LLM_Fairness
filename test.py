@@ -1,3 +1,1 @@
-diction = {"con": ([0],[0],[],[])}
-diction["con"][1][0] += 1
-print(diction["con"])
+print(min(-1, 7, 9, 11))

@@ -18,6 +18,8 @@ dataset = load_dataset('coastalcph/fairlex', 'scotus', split='train')
 text = dataset[0]['text']
 
 decision_dir = {"0": ([0], [0], [], []), "1": ([0], [0], [], [])} #Dictionary for decision direction. Tuple: (0: conservative, 1: liberal){inside tuple: Total, correct, truelable, reslabel}
+res_type = {"0": ([0], [0], [], []), "1": ([0], [0], [], []), "2": ([0], [0], [], []), "3": ([0], [0], [], []), "4": ([0], [0], [], [])}
+#similar to decision direction: total, correct, true, predicted.
 
 # Numbers
 total = 0
@@ -30,13 +32,13 @@ for example in dataset:
        is_first = False
        continue # Check for the first time, and will never be checked again
     else:
-      if(total == 10):
+      if(total == 1000):
         break
       
       input_text = example['text']
       input_ans = example['label']
       input_direction = example['decision_direction']
-      #Get the criteria such as decision_direction.
+      input_res = example['respondent_type']
 
       completion = openai.ChatCompletion.create(
         temperature=0,
@@ -50,6 +52,8 @@ for example in dataset:
       if(completion['choices'][0]['message']['content'] == str(input_ans)): # Check if the predicted label is equal to actual label.
           total_right += 1
           decision_dir[str(input_direction)][1][0] += 1
+          res_type[str(input_res)][1][0] += 1
+          #appending correct label
       
       else: #A safe layer to check if the result is correct but format issue causing it to receive wrong answer
         if(len(completion['choices'][0]['message']['content']) > 1):
@@ -59,11 +63,16 @@ for example in dataset:
                 if completion['choices'][0]['message']['content'] == str(input_ans): #check if it is the correct label
                   total_right += 1 #Total correct append
                   decision_dir[str(input_direction)][1][0] += 1
+                  res_type[str(input_res)][1][0] += 1
 
       #If the result is wrong then it goes here.
       decision_dir[str(input_direction)][2].append(str(input_ans))
       decision_dir[str(input_direction)][3].append(completion['choices'][0]['message']['content'])
+      res_type[str(input_res)][2].append(str(input_ans))
+      res_type[str(input_res)][3].append(completion['choices'][0]['message']['content'])
+      # total++
       decision_dir[str(input_direction)][0][0] += 1
+      res_type[str(input_res)][0][0] += 1
       
       #Add 1 to the total number
       total += 1
@@ -79,11 +88,10 @@ print(total_right)
 print(total)
 print(total_right / total * 100)
 
-
 print("Real answer from dataset for lib: ", decision_dir["1"][2])
 print("GPT's response for lib: ", decision_dir["1"][3])
 print("Real answer from dataset for con: ", decision_dir["0"][2])
-print("GPT's response for con: ", decision_dir["1"][3])
+print("GPT's response for con: ", decision_dir["0"][3])
 print("For conservative this is the total and total correct ", decision_dir["0"][0][0], " ----", decision_dir["0"][1][0])
 print("For liberal this is the total and total correct ", decision_dir["1"][0][0], " ----", decision_dir["1"][1][0])
 
@@ -99,3 +107,39 @@ GD = math.sqrt(0.5 * math.pow(f1_scores_lib - ave_f1_scores_decision_dir, 2) * m
 print("The mf1 average is:", ave_f1_scores_decision_dir)
 print("The GD score is:", GD)
 print("The worst mf1 score is:", min(f1_scores_con, f1_scores_lib))
+
+
+print("Real answer from dataset for other: ", res_type["0"][2])
+print("GPT's response for other: ", res_type["0"][3])
+print("Real answer from dataset for person: ", res_type["1"][2])
+print("GPT's response for person: ", res_type["1"][3])
+print("Real answer from dataset for organization: ", res_type["2"][2])
+print("GPT's response for organization: ", res_type["2"][3])
+print("Real answer from dataset for public entity: ", res_type["3"][2])
+print("GPT's response for public entity: ", res_type["3"][3])
+print("Real answer from dataset for facility: ", res_type["4"][2])
+print("GPT's response for facility: ", res_type["4"][3])
+print("For other this is the total and total correct ", res_type["0"][0][0], " ----", res_type["0"][1][0])
+print("For person this is the total and total correct ", res_type["1"][0][0], " ----", res_type["1"][1][0])
+print("For organization this is the total and total correct ", res_type["2"][0][0], " ----", res_type["2"][1][0])
+print("For public entity this is the total and total correct ", res_type["3"][0][0], " ----", res_type["3"][1][0])
+print("For facility this is the total and total correct ", res_type["4"][0][0], " ----", res_type["4"][1][0])
+
+f1_scores_other = f1_score(res_type["0"][2], res_type["0"][3], average="macro")
+f1_scores_person = f1_score(res_type["1"][2], res_type["1"][3], average="macro")
+f1_scores_org = f1_score(res_type["2"][2], res_type["2"][3], average="macro")
+f1_scores_pe = f1_score(res_type["3"][2], res_type["3"][3], average="macro")
+f1_scores_facil = f1_score(res_type["4"][2], res_type["4"][3], average="macro")
+
+print("mF1 Score for other:", f1_scores_other)
+print("mF1 Score for person:", f1_scores_person)
+print("mF1 Score for organization:", f1_scores_org)
+print("mF1 Score for public entity:", f1_scores_pe)
+print("mF1 Score for facility:", f1_scores_facil)
+
+ave_f1_scores_res_type = (f1_scores_other + f1_scores_person + f1_scores_org + f1_scores_pe + f1_scores_facil) / 5
+
+GD_res = math.sqrt(0.2 * math.pow(f1_scores_other - ave_f1_scores_res_type, 2) * math.pow(f1_scores_person - ave_f1_scores_res_type, 2) * math.pow(f1_scores_org - ave_f1_scores_res_type, 2) * math.pow(f1_scores_pe - ave_f1_scores_res_type, 2) * math.pow(f1_scores_facil - ave_f1_scores_res_type, 2))
+print("The mf1 average is:", ave_f1_scores_res_type)
+print("The GD score is:", GD_res)
+print("The worst mf1 score is:", min(f1_scores_other, f1_scores_person, f1_scores_org, f1_scores_pe, f1_scores_facil))
