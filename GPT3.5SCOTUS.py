@@ -16,14 +16,8 @@ dataset = load_dataset('coastalcph/fairlex', 'scotus', split='train')
 
 # Example data
 text = dataset[0]['text']
-true_labels_lib = []
-response_labels_lib = []
-liberal_Total = 0
-liberal_Correct = 0
-con_Total = 0
-con_Correct = 0
-true_labels_con = []
-response_labels_con = []
+
+decision_dir = {"0": ([0], [0], [], []), "1": ([0], [0], [], [])} #Dictionary for decision direction. Tuple: (0: conservative, 1: liberal){inside tuple: Total, correct, truelable, reslabel}
 
 # Numbers
 total = 0
@@ -36,14 +30,13 @@ for example in dataset:
        is_first = False
        continue # Check for the first time, and will never be checked again
     else:
-      if(total == 1000):
+      if(total == 10):
         break
       
       input_text = example['text']
       input_ans = example['label']
       input_direction = example['decision_direction']
       #Get the criteria such as decision_direction.
-      #TODO: add other criteria.
 
       completion = openai.ChatCompletion.create(
         temperature=0,
@@ -55,12 +48,9 @@ for example in dataset:
       )
 
       if(completion['choices'][0]['message']['content'] == str(input_ans)): # Check if the predicted label is equal to actual label.
-          #TODO: Change this to be more efficient. Perhaps a dictionary
-          if(input_direction == 0):
-             con_Correct += 1
-          elif(input_direction == 1):
-             liberal_Correct += 1
           total_right += 1
+          decision_dir[str(input_direction)][1][0] += 1
+      
       else: #A safe layer to check if the result is correct but format issue causing it to receive wrong answer
         if(len(completion['choices'][0]['message']['content']) > 1):
             match = re.search(r'\d+', completion['choices'][0]['message']['content']) #Regular expression to make sure there is only one item here.
@@ -68,22 +58,12 @@ for example in dataset:
                 completion['choices'][0]['message']['content'] = str(match.group())
                 if completion['choices'][0]['message']['content'] == str(input_ans): #check if it is the correct label
                   total_right += 1 #Total correct append
-                  #TODO: probably make this more efficient
-                  if(input_direction == 0): #Check for direction, conservative
-                    con_Correct += 1
-                  elif(input_direction == 1):
-                    liberal_Correct += 1
+                  decision_dir[str(input_direction)][1][0] += 1
 
       #If the result is wrong then it goes here.
-      if(input_direction == 0):
-        true_labels_con.append(str(input_ans))
-        response_labels_con.append(completion['choices'][0]['message']['content'])
-        con_Total += 1
-        #Append the conservative true label, response label and total conservative number. Same as below
-      elif(input_direction == 1):
-        true_labels_lib.append(str(input_ans))
-        response_labels_lib.append(completion['choices'][0]['message']['content'])
-        liberal_Total += 1
+      decision_dir[str(input_direction)][2].append(str(input_ans))
+      decision_dir[str(input_direction)][3].append(completion['choices'][0]['message']['content'])
+      decision_dir[str(input_direction)][0][0] += 1
       
       #Add 1 to the total number
       total += 1
@@ -98,15 +78,17 @@ print("Using GPT3.5 turbo")
 print(total_right)
 print(total)
 print(total_right / total * 100)
-print("Real answer from dataset for lib: ", true_labels_lib)
-print("GPT's response for lib: ", response_labels_lib)
-print("Real answer from dataset for con: ", true_labels_con)
-print("GPT's response for con: ", response_labels_con)
-print("For conservative this is the total and total correct ", con_Total, " ----", con_Correct)
-print("For liberal this is the total and total correct ", liberal_Total, " ----", liberal_Correct)
 
-f1_scores_lib = f1_score(true_labels_lib, response_labels_lib, average="macro")
-f1_scores_con = f1_score(true_labels_con, response_labels_con, average="macro")
+
+print("Real answer from dataset for lib: ", decision_dir["1"][2])
+print("GPT's response for lib: ", decision_dir["1"][3])
+print("Real answer from dataset for con: ", decision_dir["0"][2])
+print("GPT's response for con: ", decision_dir["1"][3])
+print("For conservative this is the total and total correct ", decision_dir["0"][0][0], " ----", decision_dir["0"][1][0])
+print("For liberal this is the total and total correct ", decision_dir["1"][0][0], " ----", decision_dir["1"][1][0])
+
+f1_scores_lib = f1_score(decision_dir["1"][2], decision_dir["1"][3], average="macro")
+f1_scores_con = f1_score(decision_dir["0"][2], decision_dir["0"][3], average="macro")
 
 print("mF1 Score for liberal:", f1_scores_lib)
 print("mF1 Score for conservative:", f1_scores_con)
