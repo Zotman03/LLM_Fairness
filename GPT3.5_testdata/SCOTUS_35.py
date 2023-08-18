@@ -43,10 +43,10 @@ for example in dataset:
       completion = openai.ChatCompletion.create(
         temperature=0,
         model="gpt-3.5-turbo", 
-        messages = [{"role": "system", "content" : "read the script and predict the relevant issue area in these categories (0, Criminal Procedure), (1, Civil Rights), (2, First Amendment), (3, Due Process), (4, Privacy), (5, Attorneys), (6, Unions), (7, Economic Activity), (8, Judicial Power), (9, Federalism), (10, Interstate Relations), (11, Federal Taxation), (12, Miscellaneous), (13, Private Action)."},
-        {"role": "user", "content" : "what would the predicted label for this" + text[:4000] + "will be? Respond with just the label number"},
+        messages = [{"role": "system", "content" : "I want you to think as a legal advisor. I will describe a legal situation, and then you will select the best corresponding label from the followings: (0, Criminal Procedure), (1, Civil Rights), (2, First Amendment), (3, Due Process), (4, Privacy), (5, Attorneys), (6, Unions), (7, Economic Activity), (8, Judicial Power), (9, Federalism), (10, Interstate Relations), (11, Federal Taxation), (12, Miscellaneous), (13, Private Action)."},
+        {"role": "user", "content" : "What would be the best corresponding label of the legal situation" + text[:4000] + "will be? You should only reply with the index number (range from 0 to 13"},
         {"role": "assistant", "content" : "9"},
-        {"role": "user", "content" : "what would the predicted label for this" + input_text[:4000] + "will be? Respond with just the label number"}]
+        {"role": "user", "content" : "What would be the best corresponding label of the legal situation" + input_text[:4000] + "will be? You should only reply with the index number (range from 0 to 13)"}]
       )
 
       if(completion['choices'][0]['message']['content'] == str(input_ans)): # Check if the predicted label is equal to actual label.

@@ -44,9 +44,9 @@ for example in dataset:
         temperature=0,
         model="gpt-3.5-turbo", 
         messages = [{"role": "system", "content" : "imagine you are a judge in China, read the script and predict how long the imprisonment term for defendent is in these categories (0, zero month), (1, less than or equal to a year), (2, less than or equal to three years but more than a year), (3, less than or equal to five years but more than three years), (4, less than or equal to ten years but more than five years), (5, more than ten years)."},
-        {"role": "user", "content" : "what would the predicted label for this" + text[:3100] + "will be? Respond with just the label number"},
+        {"role": "user", "content" : "what would the predicted label for this" + text[:2500] + "will be? Respond with just the label number"},
         {"role": "assistant", "content" : "0"},
-        {"role": "user", "content" : "what would the predicted label for this" + input_text[:3100] + "will be? Respond with just the label number"}]
+        {"role": "user", "content" : "what would the predicted label for this" + input_text[:2500] + "will be? Respond with just the label number"}]
       )
 
       if(completion['choices'][0]['message']['content'] == str(input_ans)): # Check if the predicted label is equal to actual label.

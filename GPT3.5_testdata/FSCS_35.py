@@ -18,7 +18,7 @@ dataset = load_dataset('coastalcph/fairlex', 'fscs', split='train')
 text = dataset[0]['text']
 
 language = {"0": ([0], [0], [], []), "1": ([0], [0], [], []), "2": ([0], [0], [], [])} #Dictionary for decision direction. Gender: (0: male, 1: female){inside tuple: Total, correct, truelable, reslabel}
-area = {"0": ([0], [0], [], []), "1": ([0], [0], [], []), "2": ([0], [0], [], []), "3": ([0], [0], [], []), "4": ([0], [0], [], [])}
+area = {"0": ([0], [0], [], []), "1": ([0], [0], [], []), "2": ([0], [0], [], []), "3": ([0], [0], [], []), "4": ([0], [0], [], []), "5": ([0], [0], [], [])}
 region = {"0": ([0], [0], [], []), "1": ([0], [0], [], []), "2": ([0], [0], [], []), "3": ([0], [0], [], []), "4": ([0], [0], [], []), "5": ([0], [0], [], []), "6": ([0], [0], [], []), "7": ([0], [0], [], []), "8": ([0], [0], [], [])}
 #similar to decision direction: total, correct, true, predicted. But it is for seven province regions
 
@@ -117,34 +117,38 @@ print("The GD score is:", GD)
 print("The worst mf1 score is:", min(f1_scores_G, f1_scores_F, f1_scores_I))
 
 
-print("Real answer from dataset for public: ", area["0"][2])
-print("GPT's response for Public: ", area["0"][3])
-print("Real answer from dataset for penal: ", area["1"][2])
-print("GPT's response for penal: ", area["1"][3])
-print("Real answer from dataset for social: ", area["2"][2])
-print("GPT's response for social: ", area["2"][3])
-print("Real answer from dataset for civil: ", area["3"][2])
-print("GPT's response for civil: ", area["3"][3])
-print("Real answer from dataset for insurance: ", area["4"][2])
-print("GPT's response for insurance: ", area["4"][3])
-print("For Public this is the total and total correct ", area["0"][0][0], " ----", area["0"][1][0])
-print("For Penal this is the total and total correct ", area["1"][0][0], " ----", area["1"][1][0])
-print("For Social this is the total and total correct ", area["2"][0][0], " ----", area["2"][1][0])
-print("For Civil this is the total and total correct ", area["3"][0][0], " ----", area["3"][1][0])
-print("For Insurance this is the total and total correct ", area["4"][0][0], " ----", area["4"][1][0])
+print("Real answer from dataset for other: ", area["0"][2])
+print("GPT's response for other: ", area["0"][3])
+print("Real answer from dataset for Public: ", area["1"][2])
+print("GPT's response for public: ", area["1"][3])
+print("Real answer from dataset for Penal: ", area["2"][2])
+print("GPT's response for penal: ", area["2"][3])
+print("Real answer from dataset for social: ", area["3"][2])
+print("GPT's response for social: ", area["3"][3])
+print("Real answer from dataset for civil: ", area["4"][2])
+print("GPT's response for civil: ", area["4"][3])
+print("Real answer from dataset for insurance: ", area["5"][2])
+print("GPT's response for insurance: ", area["5"][3])
+print("For other this is the total and total correct ", area["0"][0][0], " ----", area["0"][1][0])
+print("For public this is the total and total correct ", area["1"][0][0], " ----", area["1"][1][0])
+print("For penal this is the total and total correct ", area["2"][0][0], " ----", area["2"][1][0])
+print("For social this is the total and total correct ", area["3"][0][0], " ----", area["3"][1][0])
+print("For civil this is the total and total correct ", area["4"][0][0], " ----", area["4"][1][0])
+print("For Insurance this is the total and total correct ", area["5"][0][0], " ----", area["5"][1][0])
 
 f1_scores_pub = f1_score(area["0"][2], area["0"][3], average="macro")
 f1_scores_p = f1_score(area["1"][2], area["1"][3], average="macro")
 f1_scores_s = f1_score(area["2"][2], area["2"][3], average="macro")
 f1_scores_c = f1_score(area["3"][2], area["3"][3], average="macro")
 f1_scores_i = f1_score(area["4"][2], area["4"][3], average="macro")
+f1_scores_o = f1_score(area["5"][2], area["5"][3], average="macro")
 
-ave_f1_scores_area = (f1_scores_pub + f1_scores_p + f1_scores_s + f1_scores_c + f1_scores_i) / 5
+ave_f1_scores_area = (f1_scores_pub + f1_scores_p + f1_scores_s + f1_scores_c + f1_scores_i + f1_scores_o) / 6
 
-GD = math.sqrt(0.2 * math.pow(f1_scores_pub - ave_f1_scores_area, 2) * math.pow(f1_scores_p - ave_f1_scores_area, 2) * math.pow(f1_scores_s - ave_f1_scores_area, 2) * math.pow(f1_scores_c - ave_f1_scores_area, 2) * math.pow(f1_scores_i - ave_f1_scores_area, 2))
+GD = math.sqrt(1/6 * math.pow(f1_scores_pub - ave_f1_scores_area, 2) * math.pow(f1_scores_p - ave_f1_scores_area, 2) * math.pow(f1_scores_s - ave_f1_scores_area, 2) * math.pow(f1_scores_c - ave_f1_scores_area, 2) * math.pow(f1_scores_i - ave_f1_scores_area, 2) * math.pow(f1_scores_o - ave_f1_scores_area, 2))
 print("The mf1 average is:", ave_f1_scores_area)
 print("The GD score is:", GD)
-print("The worst mf1 score is:", min(f1_scores_pub, f1_scores_p, f1_scores_s, f1_scores_c, f1_scores_i))
+print("The worst mf1 score is:", min(f1_scores_pub, f1_scores_p, f1_scores_s, f1_scores_c, f1_scores_i, f1_scores_o))
 
 
 f1_scores_BJ = f1_score(region["0"][2], region["0"][3], average="macro")
