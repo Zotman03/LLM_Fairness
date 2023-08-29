@@ -50,8 +50,8 @@ table2 = axs[2].table(cellText=data2,
 table2.auto_set_font_size(False)
 table2.set_fontsize(8)
 
-# Add title
-plt.suptitle("CAIL")
+# Add title closer to the table
+plt.title("CAIL", y=3.2)  # Adjust y to move the title up or down
 
 # Ensure the subplots do not overlap
 plt.subplots_adjust(hspace=0.2)
