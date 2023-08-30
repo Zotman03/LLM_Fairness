@@ -19,7 +19,7 @@ text = dataset[0]['text']
 
 language = {"0": ([0], [0], [], []), "1": ([0], [0], [], []), "2": ([0], [0], [], [])} #Dictionary for decision direction. Gender: (0: male, 1: female){inside tuple: Total, correct, truelable, reslabel}
 area = {"0": ([0], [0], [], []), "1": ([0], [0], [], []), "2": ([0], [0], [], []), "3": ([0], [0], [], []), "4": ([0], [0], [], []), "5": ([0], [0], [], [])}
-region = {"0": ([0], [0], [], []), "1": ([0], [0], [], []), "2": ([0], [0], [], []), "3": ([0], [0], [], []), "4": ([0], [0], [], []), "5": ([0], [0], [], []), "6": ([0], [0], [], []), "7": ([0], [0], [], []), "8": ([0], [0], [], []), "9": ([0], [0], [], [])}
+region = {"0": ([0], [0], [], []), "1": ([0], [0], [], []), "2": ([0], [0], [], []), "3": ([0], [0], [], []), "4": ([0], [0], [], []), "5": ([0], [0], [], []), "6": ([0], [0], [], []), "7": ([0], [0], [], []), "8": ([0], [0], [], [])}
 #similar to decision direction: total, correct, true, predicted. But it is for seven province regions
 
 # Numbers
@@ -27,19 +27,30 @@ total = 0
 total_right = 0
 buffer = 0
 is_first = True
+checking_ifpassed = 0
+the_one = ""
+
 # Loop now
 for example in dataset:
-    if(is_first is True):
-       is_first = False
-       continue # Check for the first time, and will never be checked again
+    if((is_first is True) or (checking_ifpassed == 330)):
+      is_first = False
+      print(the_one)
+      print(str(example['decision_language']))
+      print(str(example['decision_language']) == the_one)
+      print("---------")
+      if(str(example['decision_language'])) != the_one:
+        print("hey")
+        checking_ifpassed = 0
+      continue # Check for the first time, and will never be checked again
     else:
-      if(total == 1000):
+      if(total == 100):
         break
       
       input_text = example['text']
       input_ans = example['label']
       input_lan = example['decision_language']
       input_area = example['legal_area']
+      the_one = str(input_lan)
       input_region = example['court_region']
 
       completion = openai.ChatCompletion.create(
@@ -82,13 +93,14 @@ for example in dataset:
       region[str(input_region)][0][0] += 1
       
       #Add 1 to the total number
+      checking_ifpassed += 1
       total += 1
       print(total, " out of 1000 complete")
       buffer += 1
       if(buffer % 10 == 0):
         time.sleep(10)
-      if(buffer % 200 == 0):
-         time.sleep(120)
+      #if(buffer % 200 == 0):
+         #time.sleep(120)
 
 print("Using GPT3.5 turbo")
 print(total_right)
@@ -151,6 +163,36 @@ print("The GD score is:", GD)
 print("The worst mf1 score is:", min(f1_scores_pub, f1_scores_p, f1_scores_s, f1_scores_c, f1_scores_i, f1_scores_o))
 
 
+print("Real answer from dataset for 0: ", region["0"][2])
+print("GPT's response for 0: ", region["0"][3])
+print("Real answer from dataset for 1: ", region["1"][2])
+print("GPT's response for 1: ", region["1"][3])
+print("Real answer from dataset for 2: ", region["2"][2])
+print("GPT's response for 2: ", region["2"][3])
+print("Real answer from dataset for 3: ", region["3"][2])
+print("GPT's response for 3: ", region["3"][3])
+print("Real answer from dataset for 4: ", region["4"][2])
+print("GPT's response for 4: ", region["4"][3])
+print("Real answer from dataset for 5: ", region["5"][2])
+print("GPT's response for 5: ", region["5"][3])
+print("Real answer from dataset for 6: ", region["6"][2])
+print("GPT's response for 6: ", region["6"][3])
+print("Real answer from dataset for 7: ", region["7"][2])
+print("GPT's response for 7: ", region["7"][3])
+print("Real answer from dataset for 8: ", region["8"][2])
+print("GPT's response for 8: ", region["8"][3])
+print("Real answer from dataset for 9: ", region["9"][2])
+print("GPT's response for 9: ", region["9"][3])
+print("For 0 this is the total and total correct ", region["0"][0][0], " ----", region["0"][1][0])
+print("For 1 this is the total and total correct ", region["1"][0][0], " ----", region["1"][1][0])
+print("For 2 this is the total and total correct ", region["2"][0][0], " ----", region["2"][1][0])
+print("For 3 this is the total and total correct ", region["3"][0][0], " ----", region["3"][1][0])
+print("For 4 this is the total and total correct ", region["4"][0][0], " ----", region["4"][1][0])
+print("For 5 this is the total and total correct ", region["5"][0][0], " ----", region["5"][1][0])
+print("For 6 this is the total and total correct ", region["6"][0][0], " ----", region["6"][1][0])
+print("For 7 this is the total and total correct ", region["7"][0][0], " ----", region["7"][1][0])
+print("For 8 this is the total and total correct ", region["8"][0][0], " ----", region["8"][1][0])
+
 f1_scores_BJ = f1_score(region["0"][2], region["0"][3], average="macro")
 f1_scores_LN = f1_score(region["1"][2], region["1"][3], average="macro")
 f1_scores_HN = f1_score(region["2"][2], region["2"][3], average="macro")
@@ -160,12 +202,11 @@ f1_scores_GX = f1_score(region["5"][2], region["5"][3], average="macro")
 f1_scores_ZJ = f1_score(region["6"][2], region["6"][3], average="macro")
 f1_scores_F1 = f1_score(region["7"][2], region["7"][3], average="macro")
 f1_scores_F2 = f1_score(region["8"][2], region["8"][3], average="macro")
-f1_scores_F3 = f1_score(region["9"][2], region["9"][3], average="macro")
 
 
-ave_f1_scores_reg = (f1_scores_BJ + f1_scores_LN + f1_scores_HN + f1_scores_GD + f1_scores_SC + f1_scores_GX + f1_scores_ZJ + f1_scores_F1 + f1_scores_F2 + f1_scores_F3) / 10
+ave_f1_scores_reg = (f1_scores_BJ + f1_scores_LN + f1_scores_HN + f1_scores_GD + f1_scores_SC + f1_scores_GX + f1_scores_ZJ + f1_scores_F1 + f1_scores_F2) / 9
 
-GD_res = math.sqrt(1/10 * math.pow(f1_scores_BJ - ave_f1_scores_reg, 2) * math.pow(f1_scores_LN - ave_f1_scores_reg, 2) * math.pow(f1_scores_HN - ave_f1_scores_reg, 2) * math.pow(f1_scores_GD - ave_f1_scores_reg, 2) * math.pow(f1_scores_SC - ave_f1_scores_reg, 2) * math.pow(f1_scores_GX - ave_f1_scores_reg, 2) * math.pow(f1_scores_ZJ - ave_f1_scores_reg, 2) * math.pow(f1_scores_F1 - ave_f1_scores_reg, 2) * math.pow(f1_scores_F2 - ave_f1_scores_reg, 2) * math.pow(f1_scores_F3 - ave_f1_scores_reg, 2))
+GD_res = math.sqrt(1/9 * math.pow(f1_scores_BJ - ave_f1_scores_reg, 2) * math.pow(f1_scores_LN - ave_f1_scores_reg, 2) * math.pow(f1_scores_HN - ave_f1_scores_reg, 2) * math.pow(f1_scores_GD - ave_f1_scores_reg, 2) * math.pow(f1_scores_SC - ave_f1_scores_reg, 2) * math.pow(f1_scores_GX - ave_f1_scores_reg, 2) * math.pow(f1_scores_ZJ - ave_f1_scores_reg, 2) * math.pow(f1_scores_F1 - ave_f1_scores_reg, 2) * math.pow(f1_scores_F2 - ave_f1_scores_reg, 2))
 print("The mf1 average is:", ave_f1_scores_reg)
 print("The GD score is:", GD_res)
-print("The worst mf1 score is:", min(f1_scores_BJ, f1_scores_LN, f1_scores_HN, f1_scores_GD, f1_scores_SC, f1_scores_GX, f1_scores_ZJ, f1_scores_F1, f1_scores_F2, f1_scores_F3))
+print("The worst mf1 score is:", min(f1_scores_BJ, f1_scores_LN, f1_scores_HN, f1_scores_GD, f1_scores_SC, f1_scores_GX, f1_scores_ZJ, f1_scores_F1, f1_scores_F2))
